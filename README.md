@@ -36,7 +36,7 @@ Estás en clase viendo un video a pantalla completa y necesitas tomar notas sin 
 
 ## 📦 Instalación
 
-Descarga el ejecutable desde [Releases](https://github.com/TU_USUARIO/pip-notepad/releases) o compílalo tú mismo:
+Descarga el ejecutable desde [Releases](https://github.com/juanjoselopez/pip-notepad/releases) o compílalo tú mismo:
 
 ```bash
 pnpm install
@@ -76,4 +76,4 @@ pnpm tauri build
 
 ## 📄 Licencia
 
-MIT
+MIT © [juanjoselopez](https://github.com/juanjoselopez)
