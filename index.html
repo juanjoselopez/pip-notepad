@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PiP Notepad</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="titlebar" class="drag-region">
+        <span id="title">PiP Notepad</span>
+        <div id="window-controls">
+          <button id="btn-toggle-toolbar" class="window-btn" title="Ocultar barra de herramientas">▼</button>
+          <button id="btn-minimize" class="window-btn" title="Minimizar">─</button>
+          <button id="btn-close" class="window-btn" title="Cerrar">✕</button>
+        </div>
+      </div>
+      <div id="toolbar">
+        <button class="toolbar-btn" data-cmd="bold" title="Negrita (Ctrl+B)"><b>B</b></button>
+        <button class="toolbar-btn" data-cmd="italic" title="Cursiva (Ctrl+I)"><i>I</i></button>
+        <button class="toolbar-btn" data-cmd="underline" title="Subrayado (Ctrl+U)"><u>S</u></button>
+        <span class="separator"></span>
+        <button class="toolbar-btn" data-cmd="decrease-font-size" title="Reducir tamaño">A−</button>
+        <button class="toolbar-btn" data-cmd="increase-font-size" title="Aumentar tamaño">A+</button>
+        <span class="separator"></span>
+        <button class="toolbar-btn" data-cmd="zoom-out" title="Alejar (Ctrl+-)">−</button>
+        <span id="zoom-level">100%</span>
+        <button class="toolbar-btn" data-cmd="zoom-in" title="Acercar (Ctrl++)">+</button>
+        <button class="toolbar-btn" data-cmd="zoom-reset" title="Restablecer (Ctrl+0)">⟲</button>
+        <span class="separator"></span>
+        <button id="btn-theme" class="toolbar-btn" title="Cambiar a tema claro">☾</button>
+        <button id="btn-clickthrough" class="toolbar-btn" title="Activar modo click-through">⊘</button>
+        <span class="separator"></span>
+        <select id="heading-select" title="Estilo de párrafo">
+          <option value="p">Párrafo</option>
+          <option value="h1">Título 1</option>
+          <option value="h2">Título 2</option>
+          <option value="h3">Título 3</option>
+        </select>
+        <span class="separator"></span>
+        <button id="btn-forecolor" class="toolbar-btn color-btn" title="Color de texto (Ctrl+Shift+C)">🎨</button>
+        <div id="forecolor-picker" class="color-picker hidden">
+          <button class="color-swatch" style="background:#ef4444" data-color="#ef4444"></button>
+          <button class="color-swatch" style="background:#f59e0b" data-color="#f59e0b"></button>
+          <button class="color-swatch" style="background:#10b981" data-color="#10b981"></button>
+          <button class="color-swatch" style="background:#06b6d4" data-color="#06b6d4"></button>
+          <button class="color-swatch" style="background:#3b82f6" data-color="#3b82f6"></button>
+          <button class="color-swatch" style="background:#8b5cf6" data-color="#8b5cf6"></button>
+          <button class="color-swatch" style="background:#ec4899" data-color="#ec4899"></button>
+          <button class="color-swatch active" style="background:transparent;border:2px solid var(--border)" data-color=""></button>
+        </div>
+        <button id="btn-hilitecolor" class="toolbar-btn color-btn" title="Resaltar texto (Ctrl+Shift+H)">🖌</button>
+        <div id="hilite-picker" class="color-picker hidden">
+          <button class="color-swatch" style="background:#FFF9C4" data-color="#FFF9C4"></button>
+          <button class="color-swatch" style="background:#C8E6C9" data-color="#C8E6C9"></button>
+          <button class="color-swatch" style="background:#FFCDD2" data-color="#FFCDD2"></button>
+          <button class="color-swatch" style="background:#BBDEFB" data-color="#BBDEFB"></button>
+          <button class="color-swatch" style="background:#D1C4E9" data-color="#D1C4E9"></button>
+          <button class="color-swatch remove" data-color="">✕ Sin resaltado</button>
+        </div>
+        <span class="separator"></span>
+        <button id="btn-import" class="toolbar-btn" title="Abrir archivo (Ctrl+O)">📂</button>
+        <div id="import-dropdown" class="dropdown-menu">
+          <button data-format="html">📄 HTML (conserva formato)</button>
+          <button data-format="txt">📝 Texto plano (.txt)</button>
+          <button data-format="md">📋 Markdown (.md)</button>
+        </div>
+        <span class="separator"></span>
+        <button id="btn-export" class="toolbar-btn" title="Exportar como HTML o TXT">Export ▼</button>
+      </div>
+      <div id="context-menu" class="context-menu"></div>
+      <div id="editor-container">
+        <div id="editor" contenteditable="true" autofocus></div>
+      </div>
+      <div id="status-bar">
+        <span id="word-count">Palabras: 0</span>
+        <span id="char-count">Caracteres: 0</span>
+        <span class="sep"></span>
+        <span id="pip-indicator" class="status-badge active">PiP</span>
+        <span id="ct-indicator" class="status-badge hidden">⊘</span>
+        <span class="sep"></span>
+        <input type="range" id="opacity-slider" min="0.5" max="1.0" step="0.05" value="1.0" title="Opacidad de la ventana">
+      </div>
+      <div id="click-through-overlay" class="hidden">
+        <div class="ct-overlay-content">
+          <span class="ct-icon">⊘</span>
+          <span class="ct-text">Modo click-through activo</span>
+          <span class="ct-shortcut">Salir: Ctrl + Shift + K</span>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

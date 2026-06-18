@@ -1,0 +1,233 @@
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.toolbar-btn {
+  width: 30px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  font-family: var(--font-family);
+}
+
+.toolbar-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.toolbar-btn:active {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.toolbar-btn.active {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.separator {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+#zoom-level {
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 36px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+#heading-select {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  font-family: var(--font-family);
+}
+
+#heading-select:hover {
+  border-color: var(--accent);
+}
+
+#heading-select:focus {
+  border-color: var(--accent);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  display: none;
+  z-index: 1000;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown-menu.visible {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-menu button {
+  all: unset;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: var(--font-family);
+}
+
+.dropdown-menu button:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+#toolbar {
+  position: relative;
+}
+
+.context-menu {
+  position: fixed;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  display: none;
+  z-index: 2000;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.context-menu.visible {
+  display: flex;
+  flex-direction: column;
+}
+
+.context-menu button {
+  all: unset;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: var(--font-family);
+}
+
+.context-menu button:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.context-menu .separator {
+  height: 1px;
+  width: 100%;
+  background: var(--border);
+  margin: 4px 0;
+  display: block;
+}
+
+.color-btn {
+  width: auto;
+  padding: 0 6px;
+  font-size: 14px;
+  position: relative;
+}
+
+.color-picker {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  gap: 3px;
+  grid-template-columns: repeat(4, 1fr);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  margin-top: 4px;
+}
+
+.color-picker.visible {
+  display: grid;
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  padding: 0;
+}
+
+.color-swatch:hover {
+  border-color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.color-swatch.active {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.color-swatch.remove {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.color-swatch.remove:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+}
+
+.toolbar-collapsed #toolbar {
+  display: none;
+}
+
+#import-dropdown {
+  position: absolute;
+  top: 100%;
+  left: auto;
+  right: auto;
+}
