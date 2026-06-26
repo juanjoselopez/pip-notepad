@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build + Sign + Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend + Rust (Release)
+        run: pnpm tauri build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ""
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+
+      - name: Decode sign certificate
+        env:
+          CERT_BASE64: ${{ secrets.CERT_PFX }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+        shell: pwsh
+        run: |
+          if ("$env:CERT_BASE64" -ne "") {
+            $bytes = [Convert]::FromBase64String($env:CERT_BASE64)
+            [System.IO.File]::WriteAllBytes("$env:RUNNER_TEMP\cert.pfx", $bytes)
+            Write-Output "Certificate decoded successfully"
+          } else {
+            Write-Output "No certificate found — skipping signing"
+          }
+
+      - name: Sign executable
+        shell: pwsh
+        run: |
+          $certPath = "$env:RUNNER_TEMP\cert.pfx"
+          if (Test-Path $certPath) {
+            $password = "$env:CERT_PASSWORD"
+            $signtool = Get-ChildItem -Filter "signtool.exe" -Path "C:\Program Files (x86)\Windows Kits" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+            if (-not $signtool) {
+              Write-Output "signtool not found, installing Windows SDK via Visual Studio..."
+              $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
+            }
+            if (Test-Path $signtool) {
+              $exe = "src-tauri\target\release\pip-notepad.exe"
+              $cert = Import-PfxCertificate -FilePath $certPath -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $password -Force -AsPlainText)
+              & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint /v $exe 2>&1
+              Write-Output "EXE signed"
+            }
+          } else {
+            Write-Output "Skipping signing — no certificate available"
+          }
+        env:
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+
+      - name: Prepare release assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "$env:RUNNER_TEMP\assets" -Force | Out-Null
+          Copy-Item "src-tauri\target\release\pip-notepad.exe" "$env:RUNNER_TEMP\assets\pip-notepad.exe" -Force
+          $msi = Get-ChildItem -Path "src-tauri\target\release\bundle\msi\*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($msi) {
+            Copy-Item $msi.FullName "$env:RUNNER_TEMP\assets\PiP-Notepad-$env:GITHUB_REF_NAME.msi" -Force
+          }
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "PiP Notepad ${{ github.ref_name }}"
+          body: |
+            **PiP Notepad ${{ github.ref_name }}**
+
+            ### Cambios
+            Consulta [CHANGELOG](https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}) para detalles.
+
+            ### Instalación
+            - `pip-notepad.exe` — portátil (no requiere instalación, ejecutar con doble clic)
+            - `PiP-Notepad-*.msi` — instalador de Windows
+
+            Si Windows muestra "Editor desconocido", haz clic en **Más información → Ejecutar de todas formas**.
+          draft: false
+          prerelease: false
+          files: |
+            ${{ runner.temp }}/assets/pip-notepad.exe
+            ${{ runner.temp }}/assets/PiP-Notepad-*.msi
