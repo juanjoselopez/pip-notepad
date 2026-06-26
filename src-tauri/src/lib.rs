@@ -34,11 +34,27 @@ fn sanitize_filename(filename: &str) -> Result<&str, String> {
         || filename.contains('/')
         || filename.contains('\\')
         || filename.contains(':')
+        || filename.contains('\0')
     {
         return Err("Invalid filename: path traversal detected".into());
     }
     if filename.is_empty() || filename.len() > 255 {
         return Err("Invalid filename: wrong length".into());
+    }
+    if filename.ends_with('.') || filename.ends_with(' ') {
+        return Err("Invalid filename: trailing dot or space".into());
+    }
+    let reserved = [
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    ];
+    let stem = Path::new(filename)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("");
+    if reserved.contains(&stem.to_uppercase().as_str()) {
+        return Err("Invalid filename: reserved name".into());
     }
     let allowed_extensions = ["json", "md", "html", "txt"];
     let path = Path::new(filename);
@@ -112,10 +128,31 @@ fn list_notes(app: tauri::AppHandle) -> Result<Vec<String>, String> {
     Ok(notes)
 }
 
+fn resolve_safe_path(base: &Path, candidate: &str) -> Result<PathBuf, String> {
+    let canonical_base = base
+        .canonicalize()
+        .map_err(|_| "Invalid base directory".to_string())?;
+    let candidate_path = Path::new(candidate);
+    let resolved = if candidate_path.is_absolute() {
+        candidate_path.to_path_buf()
+    } else {
+        canonical_base.join(candidate_path)
+    };
+    let canonical_resolved = resolved
+        .canonicalize()
+        .map_err(|_| "Invalid path: cannot resolve".to_string())?;
+    if canonical_resolved.starts_with(&canonical_base) {
+        Ok(canonical_resolved)
+    } else {
+        Err("Path traversal denied".into())
+    }
+}
+
 #[tauri::command]
-fn export_file(path: String, content: String) -> Result<(), String> {
-    let p = Path::new(&path);
+fn export_file(app: tauri::AppHandle, path: String, content: String) -> Result<(), String> {
+    let app_data = get_notes_dir(&app);
     let allowed_extensions = ["md", "html", "txt"];
+    let p = Path::new(&path);
     let ext = p
         .extension()
         .and_then(|e| e.to_str())
@@ -124,23 +161,15 @@ fn export_file(path: String, content: String) -> Result<(), String> {
     if !allowed_extensions.contains(&ext.as_str()) {
         return Err("Export failed: file extension not allowed".into());
     }
-
-    let parent = p.parent().unwrap_or(Path::new(""));
-    if parent
-        .to_str()
-        .map(|s| s.contains(".."))
-        .unwrap_or(false)
-    {
-        return Err("Export failed: path traversal detected".into());
-    }
-
-    std::fs::write(&path, &content).map_err(|e| e.to_string())
+    let safe_path = resolve_safe_path(&app_data, &path)?;
+    std::fs::write(&safe_path, &content).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn import_file(path: String) -> Result<String, String> {
-    let p = Path::new(&path);
+fn import_file(app: tauri::AppHandle, path: String) -> Result<String, String> {
+    let app_data = get_notes_dir(&app);
     let allowed_extensions = ["md", "markdown", "txt", "html", "json"];
+    let p = Path::new(&path);
     let ext = p
         .extension()
         .and_then(|e| e.to_str())
@@ -149,12 +178,8 @@ fn import_file(path: String) -> Result<String, String> {
     if !allowed_extensions.contains(&ext.as_str()) {
         return Err("Import failed: file extension not allowed".into());
     }
-
-    if path.contains("..") {
-        return Err("Import failed: path traversal detected".into());
-    }
-
-    std::fs::read_to_string(&path).map_err(|e| e.to_string())
+    let safe_path = resolve_safe_path(&app_data, &path)?;
+    std::fs::read_to_string(&safe_path).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -180,8 +205,8 @@ pub fn run() {
             std::fs::create_dir_all(&notes_dir).expect("failed to create notes dir");
 
             let show =
-                MenuItem::with_id(app, "show", "Mostrar/Ocultar", true, None::<&str>)?;
-            let quit = MenuItem::with_id(app, "quit", "Salir", true, Some("CmdOrCtrl+Q"))?;
+                MenuItem::with_id(app, "pip_show", "Mostrar/Ocultar", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "pip_quit", "Salir", true, Some("CmdOrCtrl+Q"))?;
             let menu = Menu::with_items(app, &[&show, &quit])?;
 
             let icon = Image::from_bytes(include_bytes!("../icons/icon.png"))
@@ -192,7 +217,7 @@ pub fn run() {
                 .menu(&menu)
                 .tooltip("PiP Notepad")
                 .on_menu_event(move |app, event| match event.id.as_ref() {
-                    "show" => {
+                    "pip_show" => {
                         if let Some(window) = get_window(app) {
                             if window.is_visible().unwrap_or(true) {
                                 let _ = window.hide();
@@ -202,7 +227,7 @@ pub fn run() {
                             }
                         }
                     }
-                    "quit" => {
+                    "pip_quit" => {
                         app.exit(0);
                     }
                     _ => {}

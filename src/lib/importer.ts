@@ -1,7 +1,5 @@
 import DOMPurify from "dompurify";
 
-(window as any).DOMPurify = DOMPurify;
-
 let markedModule: any = null;
 
 async function getMarked(): Promise<any> {

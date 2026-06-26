@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+
 export class Editor {
   private element: HTMLElement;
   private updateCallback: (() => void) | null = null;
@@ -30,12 +32,7 @@ export class Editor {
   }
 
   setContent(html: string): void {
-    const purify = (window as any).DOMPurify;
-    if (purify?.sanitize) {
-      this.element.innerHTML = purify.sanitize(html);
-    } else {
-      this.element.innerHTML = html;
-    }
+    this.element.innerHTML = DOMPurify.sanitize(html);
   }
 
   getPlainText(): string {

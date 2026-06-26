@@ -50,6 +50,7 @@ export function wrapAsHtmlPage(content: string): string {
   h2 { font-size: 1.5em; font-weight: 600; margin: 0.5em 0 0.25em; color: #06b6d4; }
   h3 { font-size: 1.25em; font-weight: 600; margin: 0.4em 0 0.2em; color: #6366f1; }
   blockquote { border-left: 3px solid #3b82f6; padding-left: 12px; margin: 0.5em 0; color: #64748b; }
+  img { max-width: 100%; height: auto; }
 </style>
 </head>
 <body>

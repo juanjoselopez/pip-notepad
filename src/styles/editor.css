@@ -89,6 +89,23 @@
   text-decoration: underline;
 }
 
+#editor img {
+  max-width: 100%;
+  height: auto;
+  resize: both;
+  overflow: hidden;
+}
+
+#editor img:focus,
+#editor img:active {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+#editor img[width][height] {
+  height: auto !important;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }
