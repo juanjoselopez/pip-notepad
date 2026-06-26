@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 export class Editor {
   private element: HTMLElement;
   private updateCallback: (() => void) | null = null;
+  private observer: MutationObserver | null = null;
 
   constructor() {
     const el = document.getElementById("editor");
@@ -21,6 +22,45 @@ export class Editor {
         document.execCommand("insertText", false, "\t");
       }
     });
+
+    this.wrapAllImages();
+
+    this.observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node instanceof HTMLImageElement) {
+            this.wrapImage(node);
+          } else if (node instanceof HTMLElement) {
+            node.querySelectorAll("img").forEach((img) => this.wrapImage(img));
+          }
+        }
+      }
+    });
+
+    this.observer.observe(this.element, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  private wrapImage(img: HTMLImageElement): void {
+    if (img.parentElement?.classList.contains("img-resize-wrapper")) return;
+
+    const wrapper = document.createElement("span");
+    wrapper.classList.add("img-resize-wrapper");
+    wrapper.contentEditable = "false";
+
+    const width = img.naturalWidth || img.width || 200;
+    const height = img.naturalHeight || img.height || 150;
+    wrapper.style.width = `${width}px`;
+    wrapper.style.height = `${height}px`;
+
+    img.parentNode?.insertBefore(wrapper, img);
+    wrapper.appendChild(img);
+  }
+
+  private wrapAllImages(): void {
+    this.element.querySelectorAll("img").forEach((img) => this.wrapImage(img as HTMLImageElement));
   }
 
   getElement(): HTMLElement {
@@ -33,6 +73,7 @@ export class Editor {
 
   setContent(html: string): void {
     this.element.innerHTML = DOMPurify.sanitize(html);
+    this.wrapAllImages();
   }
 
   getPlainText(): string {

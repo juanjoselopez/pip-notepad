@@ -89,21 +89,25 @@
   text-decoration: underline;
 }
 
-#editor img {
+#editor .img-resize-wrapper {
+  display: inline-block;
   max-width: 100%;
-  height: auto;
   resize: both;
   overflow: hidden;
+  vertical-align: top;
 }
 
-#editor img:focus,
-#editor img:active {
-  outline: 1px solid var(--accent);
+#editor .img-resize-wrapper img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+#editor .img-resize-wrapper:focus-within {
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-#editor img[width][height] {
-  height: auto !important;
 }
 
 ::-webkit-scrollbar {
